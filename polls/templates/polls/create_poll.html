@@ -1,0 +1,75 @@
+{% extends 'polls/base.html' %}
+{% load static %}
+
+{% block title %}Create Poll - Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-plus-circle"></i> Create New Poll
+                </h4>
+            </div>
+            
+            <div class="card-body p-4">
+                <form method="post" id="pollForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="id_question" class="form-label">
+                            <i class="bi bi-question-circle"></i> Poll Question *
+                        </label>
+                        {{ poll_form.question }}
+                        {% if poll_form.question.errors %}
+                            <div class="text-danger small mt-1">{{ poll_form.question.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            {{ poll_form.is_active }}
+                            <label class="form-check-label" for="id_is_active">
+                                Active (Users can vote immediately)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="mb-3">
+                        <i class="bi bi-list-ul"></i> Poll Choices (Minimum 2)
+                    </h5>
+                    
+                    {{ choice_formset.management_form }}
+                    <div id="choices-container">
+                        {% for choice_form in choice_formset %}
+                        <div class="mb-3 choice-form">
+                            <label class="form-label">Choice {{ forloop.counter }}</label>
+                            <div class="input-group">
+                                {{ choice_form.choice_text }}
+                            </div>
+                            {% if choice_form.choice_text.errors %}
+                                <div class="text-danger small mt-1">{{ choice_form.choice_text.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg flex-fill">
+                            <i class="bi bi-check-circle"></i> Create Poll
+                        </button>
+                        <a href="{% url 'polls:manage_polls' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
