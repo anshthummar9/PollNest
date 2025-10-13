@@ -18,4 +18,6 @@ urlpatterns = [
     path('manage/<int:poll_id>/edit/', views.edit_poll, name='edit_poll'),
     path('manage/<int:poll_id>/delete/', views.delete_poll, name='delete_poll'),
     path('manage/<int:poll_id>/toggle/', views.toggle_poll_status, name='toggle_poll_status'),
+    path('manage/<int:poll_id>/add-choice/', views.add_choice, name='add_choice'),
+    path('manage/choice/<int:choice_id>/delete/', views.delete_choice, name='delete_choice'),
 ]
