@@ -5,7 +5,7 @@ from django.utils import timezone
 class Poll(models.Model):
     question = models.CharField(max_length=200)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True) 
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
