@@ -1,5 +1,5 @@
-# 🗳️ Polling System
-Polling System is a fully functional web-based application designed to manage polls efficiently. Administrators can create and manage polls, while users can vote once per poll and instantly view results. Built with Django, it provides a secure, intuitive, and responsive interface suitable for both regular users and administrators.
+# 🗳️ PollNest
+PollNest is a fully functional web-based application designed to manage polls efficiently. Administrators can create and manage polls, while users can vote once per poll and instantly view results. Built with Django, it provides a secure, intuitive, and responsive interface suitable for both regular users and administrators.
 
 ---
 

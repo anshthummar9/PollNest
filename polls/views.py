@@ -20,7 +20,7 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, 'Registration successful! Welcome to the polling system.')
+            messages.success(request, 'Registration successful! Welcome to PollNest.')
             return redirect('polls:poll_list')
     else:
         form = RegisterForm()
