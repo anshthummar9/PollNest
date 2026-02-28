@@ -26,8 +26,8 @@ PollNest is a fully functional web-based application designed to manage polls ef
 1. **Clone the repository:**
 
 ```bash
-git clone https://github.com/anshthummar9/Polling_System.git
-cd Polling_System
+git clone https://github.com/anshthummar9/PollNest.git
+cd PollNest
 
 ```
 

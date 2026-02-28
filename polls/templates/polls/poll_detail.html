@@ -4,70 +4,113 @@
 {% block title %}{{ poll.question }}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow-lg">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">
-                    <i class="bi bi-question-circle"></i> {{ poll.question }}
-                </h4>
-            </div>
-            
-            <div class="card-body p-4">
-                {% if has_voted %}
-                <div class="alert alert-warning" role="alert">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <strong>Already Voted!</strong> You have already voted on this poll.
+<div class="container container-content py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                    <h3 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-question-circle text-primary me-2"></i> {{ poll.question }}
+                    </h3>
                 </div>
-                <a href="{% url 'polls:results' poll.id %}" class="btn btn-success btn-lg w-100">
-                    <i class="bi bi-bar-chart"></i> View Results
-                </a>
-                {% else %}
-                <form method="post" id="voteForm">
-                    {% csrf_token %}
-                    <div class="mb-4">
-                        <h5 class="mb-3">Select your choice:</h5>
-                        
-                        {% for choice in poll.choices.all %}
-                        <div class="choice-option p-3 mb-3 rounded">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="choice" 
-                                       id="choice{{ choice.id }}" value="{{ choice.id }}" required>
-                                <label class="form-check-label w-100" for="choice{{ choice.id }}">
-                                    <strong>{{ choice.choice_text }}</strong>
-                                </label>
+
+                <div class="card-body p-4">
+                    {% if has_voted %}
+                    <div class="alert alert-warning border-0 rounded-3 mb-4 d-flex align-items-center" role="alert"
+                        style="position: static; transform: none; width: 100%; max-width: none;">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                        <div>
+                            <strong>Already Voted!</strong><br>
+                            You have already cast your vote on this poll.
+                        </div>
+                    </div>
+                    <a href="{% url 'polls:results' poll.id %}"
+                        class="btn btn-outline-success fw-bold w-100 rounded-pill py-2">
+                        <i class="bi bi-bar-chart-fill me-2"></i> View Results
+                    </a>
+                    {% else %}
+                    <form method="post" id="voteForm">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <h5 class="mb-3 text-secondary small fw-bold">SELECT YOUR CHOICE</h5>
+
+                            {% for choice in poll.choices.all %}
+                            <div class="choice-option p-3 mb-3 rounded-3 border">
+                                <div class="form-check d-flex align-items-center m-0">
+                                    <input class="form-check-input me-3" type="radio" name="choice"
+                                        id="choice{{ choice.id }}" value="{{ choice.id }}" required
+                                        style="transform: scale(1.2);">
+                                    <label class="form-check-label w-100 fw-medium m-0 cursor-pointer"
+                                        for="choice{{ choice.id }}" style="cursor: pointer;">
+                                        {{ choice.choice_text }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-vote w-100 fw-bold rounded-pill py-2">
+                            <i class="bi bi-check2-circle me-1"></i> Submit Vote
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <hr class="my-4 opacity-10">
+
+                    <a href="{% url 'polls:poll_list' %}" class="btn btn-light fw-medium rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Polls
+                    </a>
+                </div>
+            </div>
+
+            <!-- Vote Statistics -->
+            <div class="card mt-4 shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h6 class="text-muted fw-bold text-uppercase mb-4">
+                        <i class="bi bi-graph-up text-primary me-2"></i> Poll Statistics
+                    </h6>
+                    <div class="row g-3 text-center">
+                        <div class="col-4">
+                            <div class="bg-light rounded-3 p-3 h-100 border">
+                                <h3 class="text-primary fw-bold mb-1">{{ poll.total_votes }}</h3>
+                                <small class="text-muted fw-medium text-uppercase" style="font-size: 0.75rem;">Total
+                                    Votes</small>
                             </div>
                         </div>
-                        {% endfor %}
+                        <div class="col-4">
+                            <div class="bg-light rounded-3 p-3 h-100 border">
+                                <h3 class="text-success fw-bold mb-1">{{ poll.choices.count }}</h3>
+                                <small class="text-muted fw-medium text-uppercase"
+                                    style="font-size: 0.75rem;">Choices</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="bg-light rounded-3 p-3 h-100 border d-flex flex-column justify-content-center">
+                                <h5 class="text-info fw-bold mb-1 lh-sm">
+                                    {{ poll.created_at|date:"M d" }}<br>{{ poll.created_at|date:"Y" }}
+                                </h5>
+                                <small class="text-muted fw-medium text-uppercase"
+                                    style="font-size: 0.75rem;">Created</small>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <button type="submit" class="btn btn-vote btn-primary btn-lg w-100">
-                        <i class="bi bi-check2-circle"></i> Submit Vote
-                    </button>
-                </form>
-                {% endif %}
-                
-                <hr class="my-4">
-                
-                <a href="{% url 'polls:poll_list' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Polls
-                </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-document.querySelectorAll('.choice-option').forEach(option => {
-    option.addEventListener('click', function() {
-        document.querySelectorAll('.choice-option').forEach(opt => {
-            opt.classList.remove('border-primary');
-            opt.style.backgroundColor = '';
+    document.querySelectorAll('.choice-option').forEach(option => {
+        option.addEventListener('click', function () {
+            document.querySelectorAll('.choice-option').forEach(opt => {
+                opt.classList.remove('border-primary');
+                opt.style.backgroundColor = '';
+            });
+            this.classList.add('border-primary');
+            this.style.backgroundColor = '#eef2ff';
+            this.querySelector('input[type="radio"]').checked = true;
         });
-        this.classList.add('border-primary');
-        this.style.backgroundColor = '#eef2ff';
-        this.querySelector('input[type="radio"]').checked = true;
     });
-});
 </script>
 {% endblock %}
