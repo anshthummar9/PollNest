@@ -1,7 +1,23 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Poll, Choice
+from .models import Poll, Choice, Community
+
+class CommunityForm(forms.ModelForm):
+    class Meta:
+        model = Community
+        fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter community name...'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Describe your community...',
+                'rows': 3
+            })
+        }
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
@@ -35,3 +51,9 @@ class ChoiceForm(forms.ModelForm):
                 'placeholder': 'Enter choice text...'
             })
         }
+
+    def clean_choice_text(self):
+        text = self.cleaned_data.get('choice_text', '')
+        if not text or not text.strip():
+            return ''
+        return text.strip()

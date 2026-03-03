@@ -1,0 +1,53 @@
+{% extends 'polls/base.html' %}
+{% load static %}
+
+{% block title %}Create Community - PollNest{% endblock %}
+
+{% block content %}
+<div class="container container-content py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex justify-content-center align-items-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3"
+                            style="width: 60px; height: 60px;">
+                            <i class="bi bi-people-fill fs-3"></i>
+                        </div>
+                        <h2 class="fw-bold text-dark">Create Community</h2>
+                        <p class="text-muted">Start a new space and manage polls.</p>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-4">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-bold text-dark">
+                                {{ field.label }}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <div class="form-text text-muted">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm">
+                                Create Community
+                            </button>
+                            <a href="{% url 'polls:dashboard' %}"
+                                class="btn btn-outline-secondary btn-lg rounded-pill fw-bold">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'polls/base.html' %}
+{% load static %}
+
+{% block title %}Manage {{ community.name }} - PollNest{% endblock %}
+
+{% block content %}
+<div class="container container-content py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <h2 class="mb-1 fw-bold text-dark">
+                            <i class="bi bi-gear-fill text-secondary me-2"></i> Manage Community
+                        </h2>
+                        <p class="text-muted mb-0">Update settings and manage members.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'polls:poll_list' %}?community={{ community.id }}"
+                            class="btn btn-outline-secondary rounded-pill fw-bold">
+                            <i class="bi bi-arrow-left me-1"></i> Back
+                        </a>
+                        <a href="{% url 'polls:delete_community' community.id %}"
+                            class="btn btn-danger rounded-pill fw-bold">
+                            <i class="bi bi-trash-fill me-1"></i> Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Settings Form -->
+                <div class="col-md-7">
+                    <div class="card shadow-sm border-0 rounded-4 h-100">
+                        <div class="card-header bg-white border-bottom p-4">
+                            <h4 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Details
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <form method="POST">
+                                {% csrf_token %}
+                                {% for field in form %}
+                                <div class="mb-4">
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-bold text-dark mb-2">
+                                        {{ field.label }}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                    <div class="text-danger small mt-2">
+                                        {% for error in field.errors %}
+                                        <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                                <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm">
+                                    <i class="bi bi-save-fill me-2"></i> Save Changes
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Members List -->
+                <div class="col-md-5">
+                    <div class="card shadow-sm border-0 rounded-4 h-100">
+                        <div
+                            class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-info"></i>Members</h4>
+                            <span class="badge bg-light text-dark border">{{ community.members.count }} Total</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush border-0">
+                                <!-- Admin Item -->
+                                <div
+                                    class="list-group-item p-3 d-flex justify-content-between align-items-center bg-light">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm"
+                                            style="width: 40px; height: 40px; font-weight: bold;">
+                                            {{ community.admin.username|make_list|first|upper }}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">{{ community.admin.username }}</h6>
+                                            <small class="text-muted"><i
+                                                    class="bi bi-shield-fill-check text-success me-1"></i>Admin</small>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-success rounded-pill px-3">You</span>
+                                </div>
+
+                                <!-- General Members -->
+                                {% if members %}
+                                {% for member in members %}
+                                <div class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                            style="width: 40px; height: 40px; font-weight: bold;">
+                                            {{ member.username|make_list|first|upper }}
+                                        </div>
+                                        <h6 class="mb-0 fw-bold text-dark">{{ member.username }}</h6>
+                                    </div>
+                                    <a href="{% url 'polls:remove_member' community.id member.id %}"
+                                        class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                        <i class="bi bi-person-x-fill me-1"></i> Remove
+                                    </a>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div class="p-4 text-center text-muted">
+                                    <i class="bi bi-emoji-frown fs-3 d-block mb-2"></i>
+                                    No other members yet.
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

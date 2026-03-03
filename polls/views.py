@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
@@ -6,14 +7,109 @@ from django.contrib import messages
 from django.db import IntegrityError
 from django.forms import formset_factory, modelformset_factory
 from django import forms as django_forms
-from .models import Poll, Choice, Vote
-from .forms import RegisterForm, PollForm, ChoiceForm
+from django.contrib.auth.models import User
+from .models import Poll, Choice, Vote, Community
+from .forms import RegisterForm, PollForm, ChoiceForm, CommunityForm
+
+# ==================== COMMUNITY VIEWS ====================
+
+@login_required
+def dashboard(request):
+    managed_communities = request.user.administered_communities.all()
+    your_communities = request.user.joined_communities.all()
+    discover_communities = Community.objects.exclude(id__in=managed_communities).exclude(id__in=your_communities)
+    
+    return render(request, 'polls/dashboard.html', {
+        'managed_communities': managed_communities,
+        'your_communities': your_communities,
+        'discover_communities': discover_communities
+    })
+
+@login_required
+def create_community(request):
+    if request.method == 'POST':
+        form = CommunityForm(request.POST)
+        if form.is_valid():
+            community = form.save(commit=False)
+            community.admin = request.user
+            community.save()
+            community.members.add(request.user)
+            messages.success(request, f'Community "{community.name}" created successfully!')
+            return redirect('polls:dashboard')
+    else:
+        form = CommunityForm()
+    return render(request, 'polls/create_community.html', {'form': form})
+
+@login_required
+def join_community(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    if request.method == 'POST':
+        if request.user not in community.members.all():
+            community.members.add(request.user)
+            messages.success(request, f'You have joined {community.name}!')
+    return redirect('polls:dashboard')
+
+@login_required
+def leave_community(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    if request.method == 'POST':
+        if request.user in community.members.all() and request.user != community.admin:
+            community.members.remove(request.user)
+            messages.success(request, f'You have left {community.name}.')
+            return redirect('polls:dashboard')
+    
+    return render(request, 'polls/leave_community.html', {'community': community})
+
+@login_required
+def manage_community(request, community_id):
+    community = get_object_or_404(Community, id=community_id, admin=request.user)
+    
+    if request.method == 'POST':
+        form = CommunityForm(request.POST, instance=community)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Community details updated successfully!')
+            return redirect('polls:manage_community', community_id=community.id)
+    else:
+        form = CommunityForm(instance=community)
+        
+    members = community.members.exclude(id=request.user.id)
+    return render(request, 'polls/manage_community.html', {
+        'community': community,
+        'form': form,
+        'members': members
+    })
+
+@login_required
+def remove_member(request, community_id, user_id):
+    community = get_object_or_404(Community, id=community_id, admin=request.user)
+    user_to_remove = get_object_or_404(User, id=user_id)
+    
+    if request.method == 'POST' and user_to_remove != community.admin:
+        community.members.remove(user_to_remove)
+        messages.success(request, f'{user_to_remove.username} removed from the community.')
+        return redirect('polls:manage_community', community_id=community.id)
+        
+    return render(request, 'polls/remove_member.html', {
+        'community': community,
+        'user_to_remove': user_to_remove
+    })
+
+@login_required
+def delete_community(request, community_id):
+    community = get_object_or_404(Community, id=community_id, admin=request.user)
+    if request.method == 'POST':
+        name = community.name
+        community.delete()
+        messages.success(request, f'Community "{name}" was successfully deleted.')
+        return redirect('polls:dashboard')
+    return render(request, 'polls/delete_community.html', {'community': community})
 
 # ==================== USER VIEWS ====================
 
 def register_view(request):
     if request.user.is_authenticated:
-        return redirect('polls:poll_list')
+        return redirect('polls:dashboard')
     
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -21,14 +117,14 @@ def register_view(request):
             user = form.save()
             login(request, user)
             messages.success(request, 'Registration successful! Welcome to PollNest.')
-            return redirect('polls:poll_list')
+            return redirect('polls:dashboard')
     else:
         form = RegisterForm()
     return render(request, 'polls/register.html', {'form': form})
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('polls:poll_list')
+        return redirect('polls:dashboard')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -37,23 +133,38 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, f'Welcome back, {username}!')
-            return redirect('polls:poll_list')
+            return redirect('polls:dashboard')
         else:
             messages.error(request, 'Invalid username or password')
     return render(request, 'polls/login.html')
 
 def logout_view(request):
-    logout(request)
-    messages.info(request, 'You have been logged out successfully.')
-    return redirect('polls:login')
+    if request.method == 'POST':
+        logout(request)
+        messages.info(request, 'You have been logged out successfully.')
+        return redirect('polls:login')
+    
+    return render(request, 'polls/logout_confirm.html')
 
 @login_required
 def poll_list(request):
-    polls = Poll.objects.filter(is_active=True).order_by('-created_at')
+    community_id = request.GET.get('community')
+    current_community = None
+    
+    if community_id:
+        current_community = get_object_or_404(Community, id=community_id)
+        if request.user not in current_community.members.all():
+            messages.error(request, 'You must be a member to view these polls.')
+            return redirect('polls:dashboard')
+        polls = Poll.objects.filter(is_active=True, community=current_community).order_by('-created_at')
+    else:
+        polls = Poll.objects.filter(is_active=True, community__isnull=True).order_by('-created_at')
+        
     user_votes = Vote.objects.filter(user=request.user).values_list('choice__poll_id', flat=True)
     return render(request, 'polls/poll_list.html', {
         'polls': polls,
-        'user_votes': list(user_votes)
+        'user_votes': list(user_votes),
+        'current_community': current_community
     })
 
 @login_required
@@ -86,6 +197,14 @@ def results(request, poll_id):
 
 @staff_member_required
 def create_poll(request):
+    community_id = request.GET.get('community')
+    
+    if not community_id:
+        messages.error(request, 'Please select a community to create a poll in.')
+        return redirect('polls:dashboard')
+        
+    community = get_object_or_404(Community, id=community_id, admin=request.user)
+
     ChoiceFormSet = formset_factory(ChoiceForm, extra=4, min_num=2, validate_min=True)
     
     if request.method == 'POST':
@@ -95,6 +214,7 @@ def create_poll(request):
         if poll_form.is_valid() and choice_formset.is_valid():
             poll = poll_form.save(commit=False)
             poll.created_by = request.user
+            poll.community = community
             poll.save()
             
             for choice_form in choice_formset:
@@ -104,20 +224,32 @@ def create_poll(request):
                     choice.save()
             
             messages.success(request, f'Poll "{poll.question}" created successfully!')
-            return redirect('polls:manage_polls')
+            return redirect(f"{reverse('polls:manage_polls')}?community={poll.community.id}")
     else:
         poll_form = PollForm()
         choice_formset = ChoiceFormSet()
     
     return render(request, 'polls/create_poll.html', {
         'poll_form': poll_form,
-        'choice_formset': choice_formset
+        'choice_formset': choice_formset,
+        'current_community': community
     })
 
-@staff_member_required
+@login_required
 def manage_polls(request):
-    polls = Poll.objects.all().order_by('-created_at')
-    return render(request, 'polls/manage_polls.html', {'polls': polls})
+    community_id = request.GET.get('community')
+    
+    if not community_id:
+        messages.error(request, 'Please select a community to manage its polls.')
+        return redirect('polls:dashboard')
+        
+    current_community = get_object_or_404(Community, id=community_id, admin=request.user)
+    polls = Poll.objects.filter(community=current_community).order_by('-created_at')
+        
+    return render(request, 'polls/manage_polls.html', {
+        'polls': polls,
+        'current_community': current_community
+    })
 
 @staff_member_required
 def edit_poll(request, poll_id):
@@ -142,14 +274,18 @@ def edit_poll(request, poll_id):
             # Save choices
             choices = choice_formset.save(commit=False)
             for choice in choices:
-                choice.poll = poll
-                choice.save()
+                if choice.choice_text and choice.choice_text.strip():
+                    choice.choice_text = choice.choice_text.strip()
+                    choice.poll = poll
+                    choice.save()
             
             # Delete marked choices
             for choice in choice_formset.deleted_objects:
                 choice.delete()
             
             messages.success(request, f'Poll "{poll.question}" updated successfully!')
+            if poll.community:
+                return redirect(f"{reverse('polls:manage_polls')}?community={poll.community.id}")
             return redirect('polls:manage_polls')
     else:
         poll_form = PollForm(instance=poll)
@@ -199,6 +335,8 @@ def delete_poll(request, poll_id):
         question = poll.question
         poll.delete()
         messages.success(request, f'Poll "{question}" deleted successfully!')
+        if poll.community:
+            return redirect(f"{reverse('polls:manage_polls')}?community={poll.community.id}")
         return redirect('polls:manage_polls')
     
     return render(request, 'polls/delete_poll.html', {'poll': poll})
@@ -211,4 +349,6 @@ def toggle_poll_status(request, poll_id):
     
     status = "activated" if poll.is_active else "deactivated"
     messages.success(request, f'Poll "{poll.question}" {status}!')
+    if poll.community:
+        return redirect(f"{reverse('polls:manage_polls')}?community={poll.community.id}")
     return redirect('polls:manage_polls')

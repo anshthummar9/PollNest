@@ -73,7 +73,7 @@
                                             {% if form.instance.pk %}
                                             <span
                                                 class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-2 fs-6 me-3 shadow-sm">
-                                                {{ form.instance.vote_count }} vote{{ form.instance.vote_count|pluralize }}
+                                                {{ form.instance.vote_count }} vote
                                             </span>
                                             {% endif %}
                                             <div class="form-check form-check-inline m-0">
@@ -93,7 +93,7 @@
                         <hr class="my-4 opacity-10">
 
                         <div class="d-flex flex-column flex-sm-row gap-3">
-                            <a href="{% url 'polls:manage_polls' %}"
+                            <a href="{% url 'polls:manage_polls' %}{% if poll.community %}?community={{ poll.community.id }}{% endif %}"
                                 class="btn btn-light fw-medium rounded-pill px-4 flex-fill order-2 order-sm-1">
                                 <i class="bi bi-x-lg me-1"></i> Cancel
                             </a>
@@ -144,7 +144,7 @@
 </div>
 
 <script>
-    let formCount = {{ choice_formset.total_form_count }};
+    let formCount = parseInt("{{ choice_formset.total_form_count }}") || 0;
 
     function addNewChoice() {
         const container = document.getElementById('choices-container');
@@ -157,7 +157,7 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-7">
-                    <label class="form-label">Choice ${formCount + 1}</label>
+                    <label class="form-label text-secondary small fw-bold mb-1">CHOICE ${formCount + 1}</label>
                     <input type="text" name="form-${formCount}-choice_text" 
                            class="form-control" placeholder="Enter choice text..." 
                            maxlength="200" id="id_form-${formCount}-choice_text">
@@ -191,7 +191,7 @@
         choices.forEach((choice, index) => {
             const label = choice.querySelector('label');
             if (label) {
-                label.textContent = `Choice ${index + 1}`;
+                label.textContent = `CHOICE ${index + 1}`;
             }
         });
     }

@@ -16,7 +16,8 @@
                 </div>
 
                 <div class="card-body p-4">
-                    <form method="post" id="pollForm">
+                    <form method="post" id="pollForm"
+                        action="{% url 'polls:create_poll' %}?community={{ current_community.id }}">
                         {% csrf_token %}
 
                         <div class="mb-4">
@@ -78,7 +79,7 @@
                         <hr class="my-4 opacity-10">
 
                         <div class="d-flex flex-column flex-sm-row gap-3">
-                            <a href="{% url 'polls:manage_polls' %}"
+                            <a href="{% url 'polls:manage_polls' %}?community={{ current_community.id }}"
                                 class="btn btn-light fw-medium rounded-pill px-4 flex-fill order-2 order-sm-1">
                                 <i class="bi bi-x-lg me-1"></i> Cancel
                             </a>
@@ -95,7 +96,7 @@
 </div>
 
 <script>
-    let choiceCount = {{ choice_formset.total_form_count }};
+    let choiceCount = parseInt("{{ choice_formset.total_form_count }}") || 0;
 
     function addChoiceField() {
         const container = document.getElementById('choices-container');
@@ -105,7 +106,7 @@
         newChoice.className = 'mb-3 choice-form';
         newChoice.id = `choice-${choiceCount}`;
         newChoice.innerHTML = `
-        <label class="form-label">Choice ${choiceCount + 1}</label>
+        <label class="form-label text-secondary small fw-bold mb-1">CHOICE ${choiceCount + 1}</label>
         <div class="input-group">
             <input type="text" name="form-${choiceCount}-choice_text" 
                    class="form-control" placeholder="Enter choice text..." 
@@ -137,7 +138,7 @@
         choices.forEach((choice, index) => {
             const label = choice.querySelector('label');
             if (label) {
-                label.textContent = `Choice ${index + 1}`;
+                label.textContent = `CHOICE ${index + 1}`;
             }
         });
     }

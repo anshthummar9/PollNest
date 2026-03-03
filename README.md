@@ -1,26 +1,39 @@
 # 🗳️ PollNest
-PollNest is a fully functional web-based application designed to manage polls efficiently. Administrators can create and manage polls, while users can vote once per poll and instantly view results. Built with Django, it provides a secure, intuitive, and responsive interface suitable for both regular users and administrators.
+
+PollNest is a fully functional, community-driven web application designed to manage polls efficiently. Users can create specialized communities, join existing ones, and participate in polls. Community administrators have full control over managing their members and polls, while users can vote once per poll and instantly view results. Built with Django, it provides a secure, intuitive, and highly responsive interface using Bootstrap 5.
 
 ---
 
 ## ✨ Features
 
-- 🛠️ Admins can create, edit, and delete polls  
-- 🗳️ Users can vote **once per poll**  
-- 📊 View real-time voting results  
-- 🌐 Responsive and user-friendly interface  
-- 🔒 Secure voting system to prevent multiple votes  
-- ⚡ Lightweight and easy to deploy  
+### 🏢 Community Management
+- **Create & Join:** Users can easily create new communities or join existing ones.
+- **Admin Controls:** Community creators act as admins capable of managing members and adjusting community settings.
+- **Member Ejection:** Admins can safely remove malicious or inactive members from their communities.
+- **Safe Exit:** Members can leave communities they are no longer interested in.
+
+### 📊 Poll Management
+- **Community-Scoped Polls:** Polls are strictly assigned to specific communities.
+- **Admin Exclusive:** Only community admins can create, edit, toggle (active/inactive), and delete polls within their community.
+- **Fair Voting:** Users can cast their vote **strictly once** per poll.
+- **Real-Time Results:** View beautiful, real-time vote distributions and statistics instantly.
+
+### 🔒 Security & User Experience
+- **Authentication:** Secure user registration, login, and logout flows.
+- **Responsive UI:** A modern, mobile-friendly interface styled with Bootstrap 5 and Bootstrap Icons.
+- **Protection:** Actions are context-aware and protected by robust Django backend validation.
 
 ---
+
 ## 💻 Tech Stack
 
 - **Backend:** Python (Django) 🐍  
-- **Frontend:** HTML, CSS, JavaScript 💻  
+- **Frontend:** HTML, CSS, JavaScript (Bootstrap 5) 💻  
 - **Database:** SQLite 🗄️  
 - **Version Control:** Git 🔧  
 
 ---
+
 ## ⚙️ Installation
 
 1. **Clone the repository:**
@@ -55,5 +68,5 @@ python manage.py migrate
 ```bash
 python manage.py runserver
 ```
-Visit http://127.0.0.1:8000/ in your browser. 🌐
 
+Visit http://127.0.0.1:8000/ in your browser. 🌐

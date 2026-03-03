@@ -2,9 +2,20 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+class Community(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='administered_communities')
+    members = models.ManyToManyField(User, related_name='joined_communities', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
 class Poll(models.Model):
     question = models.CharField(max_length=200)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='polls', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True) 
     is_active = models.BooleanField(default=True)
 

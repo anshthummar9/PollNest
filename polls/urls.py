@@ -12,6 +12,15 @@ urlpatterns = [
     path('poll/<int:poll_id>/', views.poll_detail, name='poll_detail'),
     path('poll/<int:poll_id>/results/', views.results, name='results'),
     
+    # Community routes
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('community/create/', views.create_community, name='create_community'),
+    path('community/<int:community_id>/join/', views.join_community, name='join_community'),
+    path('community/<int:community_id>/leave/', views.leave_community, name='leave_community'),
+    path('community/<int:community_id>/manage/', views.manage_community, name='manage_community'),
+    path('community/<int:community_id>/delete/', views.delete_community, name='delete_community'),
+    path('community/<int:community_id>/member/<int:user_id>/remove/', views.remove_member, name='remove_member'),
+
     # Admin routes
     path('manage/', views.manage_polls, name='manage_polls'),
     path('manage/create/', views.create_poll, name='create_poll'),
